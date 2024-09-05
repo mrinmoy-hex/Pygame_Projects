@@ -7,9 +7,20 @@ class Player(pygame.sprite.Sprite):
     def __init__(self, groups) -> None:
         super().__init__(groups)
         self.image = pygame.image.load("space_game/images/player.png").convert_alpha()
-        self.rect = self.image .get_frect(center = (WIDTH / 2, HEIGHT /2))
+        self.rect = self.image.get_frect(center = (WIDTH / 2, HEIGHT /2))
         self.player_dir = pygame.math.Vector2()
         self.player_speed = 300
+        
+        # laser cooldown
+        self.can_shoot = True
+        self.laser_shot_time = 0
+        self.cooldown_duration = 400 
+        
+    def laser_timer(self):
+        if not self.can_shoot:
+            current_time = pygame.time.get_ticks()
+            if current_time - self.laser_shot_time >= self.cooldown_duration:
+                self.can_shoot = True
         
     def update(self, dt) -> None:
         keys = pygame.key.get_pressed()
@@ -19,8 +30,12 @@ class Player(pygame.sprite.Sprite):
         self.rect.center += self.player_dir * self.player_speed * dt
         
         recent_keys = pygame.key.get_just_pressed()
-        if recent_keys[pygame.K_SPACE]:
-            print("fire laser")
+        if recent_keys[pygame.K_SPACE] and self.can_shoot:
+            Laser(lazer, self.rect.midtop, all_sprites)
+            self.can_shoot = False 
+            self.laser_shot_time = pygame.time.get_ticks()
+            
+        self.laser_timer()
 
     # for debugging player direction
     # print(player_dir) 
@@ -30,6 +45,32 @@ class Stars(pygame.sprite.Sprite):
         super().__init__(groups)
         self.image = surf
         self.rect = self.image.get_frect(center = (random.randint(2, WIDTH - 23), random.randint(2, HEIGHT - 23)))
+
+class Laser(pygame.sprite.Sprite):
+    def __init__(self,surf, pos, groups) -> None:
+        super().__init__(groups)
+        self.image = surf
+        self.rect = self.image.get_frect(midbottom = pos)
+        
+    def update(self, dt):
+        self.rect.centery -= 400 * dt
+        if self.rect.bottom < 0:
+            self.kill() # kills the sprite after passed the window height
+
+class Meteor(pygame.sprite.Sprite):
+    def __init__(self, surf, pos, groups) -> None:
+        super().__init__(groups)
+        self.image = surf
+        self.rect = self.image.get_frect(center = pos) 
+        self.start_time = pygame.time.get_ticks()
+        self.lifetime = 3000
+        self.direction = pygame.Vector2(random.uniform(-0.5, 0.5), 1)
+        self.speed = random.randint(400, 500)
+        
+    def update(self, dt):
+        self.rect.center += self.direction * self.speed * dt
+        if pygame.time.get_ticks() - self.start_time >= self.lifetime:
+            self.kill()
 
 # general setup
 pygame.init()
@@ -42,17 +83,21 @@ pygame.display.set_caption("Space Shooter")
 
 all_sprites = pygame.sprite.Group()
 # all_sprites.add(player) # not required as it's added in the group by init method
+
+#import stuff
 star_surf = pygame.image.load(join("space_game","images", "star.png")).convert_alpha()
+meteor = pygame.image.load("space_game/images/meteor.png").convert_alpha()
+lazer = pygame.image.load("space_game/images/laser.png").convert_alpha()
+
+# sprites
 for i in range(20):
     Stars(all_sprites, star_surf)
 player = Player(all_sprites)
 
-meteor = pygame.image.load("space_game/images/meteor.png").convert_alpha()
-meteor_rect = meteor.get_frect(center = (WIDTH / 2, HEIGHT /2))
-
-lazer = pygame.image.load("space_game/images/laser.png").convert_alpha()
-lazer_rect = lazer.get_frect(bottomleft = (20, HEIGHT - 20))
-
+# meteor_rect = meteor.get_frect(center = (WIDTH / 2, HEIGHT /2))
+# custom events -> meteor event
+meteor_event = pygame.event.custom_type()
+pygame.time.set_timer(meteor_event, 500)
 
 while True:
     dt = clock.tick(120) / 1000    # delta time
@@ -60,6 +105,9 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        if event.type == meteor_event:
+            x,y = random.randint(0, WIDTH), random.randint(-200, -100)
+            Meteor(meteor, (x,y), all_sprites)
             
     all_sprites.update(dt)
        
