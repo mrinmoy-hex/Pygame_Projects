@@ -6,7 +6,7 @@ import random
 class Player(pygame.sprite.Sprite):
     def __init__(self, groups) -> None:
         super().__init__(groups)
-        self.image = pygame.image.load("space_game/images/player.png").convert_alpha()
+        self.image = pygame.image.load("images/player.png").convert_alpha()
         self.rect = self.image.get_frect(center = (WIDTH / 2, HEIGHT /2))
         self.player_dir = pygame.math.Vector2()
         self.player_speed = 300
@@ -135,18 +135,18 @@ lazer_sprite = pygame.sprite.Group()
 # all_sprites.add(player) # not required as it's added in the group by init method
 
 #import stuff
-star_surf = pygame.image.load(join("space_game","images", "star.png")).convert_alpha()
-meteor = pygame.image.load("space_game/images/meteor.png").convert_alpha()
-lazer = pygame.image.load("space_game/images/laser.png").convert_alpha()
-font = pygame.font.Font(join("space_game", "images", "Oxanium-Bold.ttf"), 40)
-explosion_frames = [pygame.image.load(join("space_game", "images", "explosion", f"{i}.png")).convert_alpha() for i in range(21)]
+star_surf = pygame.image.load(join("images", "star.png")).convert_alpha()
+meteor = pygame.image.load("images/meteor.png").convert_alpha()
+lazer = pygame.image.load("images/laser.png").convert_alpha()
+font = pygame.font.Font(join("images", "Oxanium-Bold.ttf"), 40)
+explosion_frames = [pygame.image.load(join("images", "explosion", f"{i}.png")).convert_alpha() for i in range(21)]
 # print(explosion_frames)
 
-laser_sound = pygame.mixer.Sound(join("space_game", "audio", "laser.wav"))
+laser_sound = pygame.mixer.Sound(join("audio", "laser.wav"))
 laser_sound.set_volume(0.5)
-explosion_sound = pygame.mixer.Sound(join("space_game", "audio", "explosion.wav"))
+explosion_sound = pygame.mixer.Sound(join("audio", "explosion.wav"))
 explosion_sound.set_volume(0.5)
-game_music = pygame.mixer.Sound(join("space_game", "audio", "game_music.wav"))
+game_music = pygame.mixer.Sound(join("audio", "game_music.wav"))
 game_music.set_volume(0.4)
 game_music.play(loops=-1)   # plays the audio file indefinitely
 
