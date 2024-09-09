@@ -73,7 +73,7 @@ class Meteor(pygame.sprite.Sprite):
             self.kill()
             
 def collisions():
-    global running
+    global running  # not an ideal approach, goona fix this later
     collision_sprites = pygame.sprite.spritecollide(player, meteor_sprites, True)
     if collision_sprites:
         running = False # ends the game if meteor strikes the player
@@ -83,7 +83,13 @@ def collisions():
         if collided_sprite:
             laser.kill()
 
-
+def display_score ():
+    current_time = pygame.time.get_ticks() // 100   # floor division for better score
+    text_surf = font.render(str(current_time), True, (240, 240, 240))
+    text_rect =text_surf.get_frect(midbottom = (WIDTH / 2, HEIGHT - 50))
+    screen.blit(text_surf, text_rect)
+    pygame.draw.rect(screen, (240, 240, 240), text_rect.inflate(20, 16).move(0, -8), 5, 10)
+    
 # general setup
 pygame.init()
 WIDTH = 1280
@@ -103,6 +109,7 @@ lazer_sprite = pygame.sprite.Group()
 star_surf = pygame.image.load(join("space_game","images", "star.png")).convert_alpha()
 meteor = pygame.image.load("space_game/images/meteor.png").convert_alpha()
 lazer = pygame.image.load("space_game/images/laser.png").convert_alpha()
+font = pygame.font.Font(join("space_game", "images", "Oxanium-Bold.ttf"), 40)
 
 # sprites
 for i in range(20):
@@ -128,10 +135,11 @@ while running:
     all_sprites.update(dt)
     # collisions for sprites
     collisions()   
-    screen.fill('darkgray')
+    screen.fill('#3a2e3f')  # hex color code for background
     # screen.blit(player.image, player.rect) Not an ideal approach
     all_sprites.draw(screen)
- 
+    display_score()
+    
     pygame.display.update()
 
 
