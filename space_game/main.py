@@ -31,7 +31,7 @@ class Player(pygame.sprite.Sprite):
         
         recent_keys = pygame.key.get_just_pressed()
         if recent_keys[pygame.K_SPACE] and self.can_shoot:
-            Laser(lazer, self.rect.midtop, all_sprites)
+            Laser(lazer, self.rect.midtop, (all_sprites, lazer_sprite))     # same thing as in meteor sprite
             self.can_shoot = False 
             self.laser_shot_time = pygame.time.get_ticks()
             
@@ -71,17 +71,32 @@ class Meteor(pygame.sprite.Sprite):
         self.rect.center += self.direction * self.speed * dt
         if pygame.time.get_ticks() - self.start_time >= self.lifetime:
             self.kill()
+            
+def collisions():
+    global running
+    collision_sprites = pygame.sprite.spritecollide(player, meteor_sprites, True)
+    if collision_sprites:
+        running = False # ends the game if meteor strikes the player
+    #print("Laser collision")
+    for laser in lazer_sprite:
+        collided_sprite = pygame.sprite.spritecollide(laser, meteor_sprites, True)
+        if collided_sprite:
+            laser.kill()
+
 
 # general setup
 pygame.init()
 WIDTH = 1280
 HEIGHT = 720
 clock = pygame.time.Clock() # used for setting frame rate
+running = True
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Space Shooter")
 
 all_sprites = pygame.sprite.Group()
+meteor_sprites = pygame.sprite.Group()
+lazer_sprite = pygame.sprite.Group()
 # all_sprites.add(player) # not required as it's added in the group by init method
 
 #import stuff
@@ -94,12 +109,13 @@ for i in range(20):
     Stars(all_sprites, star_surf)
 player = Player(all_sprites)
 
+
 # meteor_rect = meteor.get_frect(center = (WIDTH / 2, HEIGHT /2))
 # custom events -> meteor event
 meteor_event = pygame.event.custom_type()
 pygame.time.set_timer(meteor_event, 500)
 
-while True:
+while running:
     dt = clock.tick(120) / 1000    # delta time
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -107,14 +123,15 @@ while True:
             sys.exit()
         if event.type == meteor_event:
             x,y = random.randint(0, WIDTH), random.randint(-200, -100)
-            Meteor(meteor, (x,y), all_sprites)
+            Meteor(meteor, (x,y), (all_sprites, meteor_sprites))    # this thing give access to all meteor sprites
             
     all_sprites.update(dt)
-       
+    # collisions for sprites
+    collisions()   
     screen.fill('darkgray')
     # screen.blit(player.image, player.rect) Not an ideal approach
     all_sprites.draw(screen)
-    
+ 
     pygame.display.update()
 
 
